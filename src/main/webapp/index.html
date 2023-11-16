@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mushroom API</title>
+
+</head>
+<body>
+    <h1>Find any species of fungi</h1>
+    <button id="button1">Submit</button>
+    <div class="form">
+        <form id="mushroomForm">
+            <h2>Submit a Mushroom Record to API</h2>
+            <label for="latinName">Latin Name Of Mushroom:</label><br>
+            <input type="text" id="latinName" name="latinName" required><br><br>
+            <label for="englishName">English Name Of Mushroom:</label><br>
+            <input type="text" id="englishName" name="englishName" required><br><br>
+            <label for="color">Color:</label>
+            <input type="text" id="color" name="color" required><br><br>
+            <label for="edible">Is it edible:</label>
+            <input type="number" id="edible" name="edible" required><br><br>
+            <label for="poisonous">Is it poisonous:</label>
+            <input type="number" id="poisonous" name="poisonous" required><br><br>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+
+
+    <script src="script.js"></script>
+</body>
+</html>
