@@ -1,13 +1,16 @@
 package resteasy.resource;
 
+import com.mushrooms.models.Datasource;
 import com.mushrooms.models.Mushroom;
-import resteasy.models.AddMushroomImpl;
-import resteasy.models.AllMushrooms;
-import resteasy.models.PoisonousMushrooms;
+import resteasy.service.AddMushroomImpl;
+import resteasy.service.AllMushrooms;
+import resteasy.service.PoisonousMushrooms;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.sql.SQLException;
 
 @Path("mushrooms")
@@ -25,18 +28,21 @@ public class MushroomResource {
                 .entity(allMushrooms.getAllMushrooms())
                 .build();
     }
-    @Path("poisenous")
+    @Path("{latinName}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response allPoisonMushrooms() throws SQLException{
-        PoisonousMushrooms poisonousMushrooms = new PoisonousMushrooms();
-        //return mushrooms that are poisenous
-        return Response.ok(poisonousMushrooms.getAllPoisonousMushrooms()).build();
+    public Response oneMushroom(@Encoded @PathParam("latinName") String latinName) throws SQLException, UnsupportedEncodingException {
+        String latinNamedecoded = URLDecoder.decode(latinName, "UTF-8");
+        AllMushrooms allMushrooms = new AllMushrooms(0);
+        //return mushroom by its latinName
+
+        return Response.ok(Datasource.getOne(latinNamedecoded)).build();
+
     }
     @Path("poisenous/{sort}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response sortedPoisonMushrooms(@PathParam("sort") String sort) throws SQLException {
+    public Response sortedPoisonMushrooms(@Encoded @PathParam("sort") String sort) throws SQLException {
         PoisonousMushrooms poisonousMushrooms = new PoisonousMushrooms();
         //return all poisonous mushrooms sorted with /asc or /desc
         if (sort.equals("asc")) {

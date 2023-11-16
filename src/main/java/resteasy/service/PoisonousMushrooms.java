@@ -1,11 +1,9 @@
-package resteasy.models;
+package resteasy.service;
 
 import com.mushrooms.models.Mushroom;
-import org.example.Utils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class PoisonousMushrooms {

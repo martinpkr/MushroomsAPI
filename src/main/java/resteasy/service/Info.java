@@ -1,9 +1,6 @@
-package resteasy.models;
-
-import com.mushrooms.models.Mushroom;
+package resteasy.service;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 public interface Info {
     static int getCount() throws SQLException {
