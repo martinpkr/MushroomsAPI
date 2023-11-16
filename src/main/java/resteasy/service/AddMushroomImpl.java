@@ -1,4 +1,4 @@
-package resteasy.models;
+package resteasy.service;
 
 import com.mushrooms.models.Datasource;
 
@@ -12,10 +12,7 @@ public class AddMushroomImpl {
                 colors != null && !colors.isEmpty()) {
             if (edible >= 0 && poison >= 0) {
                 Datasource datasource = new Datasource();
-                if(datasource.open()) {
-                    Datasource.insertIntoTable(latinName, englishName, colors, edible, poison);
-                    datasource.close();
-                }
+//                Datasource.insertIntoTable(latinName, englishName, colors, edible, poison);
             } else {
                 System.out.println("Invalid values for edible and poison. They must not be negative.");
             }

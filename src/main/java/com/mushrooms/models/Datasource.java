@@ -1,8 +1,11 @@
 package com.mushrooms.models;
 
-import org.example.Utils;
-
-import java.sql.*;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,83 +23,81 @@ public class Datasource {
     public static final int ORDER_BY_ASC = 1;
     public static final int ORDER_BY_DESC = 2;
 
-    private static Connection conn;
+    private static HikariDataSource dataSource;
 
-    public boolean open() {
+    public static void initJDBConnectionPool() {
+       try {
+           Class.forName("org.sqlite.JDBC");
+           HikariConfig config = new HikariConfig();
+           config.setPoolName("SQLitePool");
+           config.setDriverClassName("org.sqlite.JDBC");
+           config.setJdbcUrl("jdbc:sqlite:/home/martin.kirilov/Desktop/Java/TestDataBase/" + DATABASE_CONNECTION);
+           config.setConnectionTestQuery("SELECT 1");
+           config.setMaxLifetime(60000); // 60 Sec
+           config.setIdleTimeout(45000); // 45 Sec
+           config.setMaximumPoolSize(50); // 50 Connections (including idle connections)
+           dataSource = new HikariDataSource(config);
 
-    try {
-        Class.forName("org.sqlite.JDBC");
-        conn = DriverManager.getConnection("jdbc:sqlite:/home/martin.kirilov/Desktop/Java/TestDataBase/" + DATABASE_CONNECTION);
-        return true;
-    }catch (SQLException e){
-        System.out.println("Connection failed DB" + e.getMessage());
-        return false;
-    } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
+       }catch (ClassNotFoundException e ){
+           e.printStackTrace();
+       }
+    //init connection with configuring relative path to the DB that is in the root dir of the project
     }
+    public static void closeJDVConnectionPool(){
+        dataSource.close();
     }
-    public void close(){
-        try{
-            if(conn != null){
-                conn.close();
+
+    public static ArrayList<Mushroom> queryMushrooms(int orderBy) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            System.out.println(connection);
+            StringBuilder sb = new StringBuilder("SELECT * FROM ");
+            sb.append(DATABASE_TABLE);
+            if (orderBy != ORDER_BY_NONE) {
+                sb.append(" ORDER BY ");
+                sb.append(COLUMN_ENGLISHNAME);
+                sb.append(" COLLATE NOCASE ");
+                if (orderBy == ORDER_BY_DESC) {
+                    sb.append("DESC");
+                } else {
+                    sb.append("ASC");
+                }
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            ArrayList<Mushroom> mushroomArrayList = new ArrayList<>();
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sb.toString())) {
+                System.out.println(preparedStatement);
+                //changed all Statements to PreparedStatements
+                ResultSet results = preparedStatement.executeQuery();
+                while (results.next()) {
+                    Mushroom mushroom = new Mushroom();
+                    mushroom.setId(results.getInt(COLUMN_ID));
+                    mushroom.setLatinName(results.getString(COLUMN_LATINNAME));
+                    mushroom.setEnglishName(results.getString(COLUMN_ENGLISHNAME));
+                    mushroom.setColor(results.getString(COLUMN_COLOR));
+                    mushroom.setEdible(results.getInt(COLUMN_EDIBLE));
+                    mushroom.setPoisonous(results.getInt(COLUMN_POISONIOUS));
+                    mushroomArrayList.add(mushroom);
+                }
+                return mushroomArrayList;
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                return null;
+            } finally {
+
+            }
         }
     }
-
-    public List<Mushroom> queryMushrooms(int orderBy) {
-        StringBuilder sb = new StringBuilder("SELECT * FROM ");
-        sb.append(DATABASE_TABLE);
-        if(orderBy != ORDER_BY_NONE){
-            sb.append(" ORDER BY ");
-            sb.append(COLUMN_ENGLISHNAME);
-            sb.append(" COLLATE NOCASE ");
-            if(orderBy == ORDER_BY_DESC){
-                sb.append("DESC");
-            }else{
-                sb.append("ASC");
-            }
-        }
-        List<Mushroom> mushrooms = new ArrayList<>();
-        try(Statement statement = conn.createStatement()){
-            ResultSet results = statement.executeQuery(sb.toString());
-            while(results.next()){
-                Mushroom mushroom = new Mushroom();
-                mushroom.setId(results.getInt(COLUMN_ID));
-                mushroom.setLatinName(results.getString(COLUMN_LATINNAME));
-                mushroom.setEnglishName(results.getString(COLUMN_ENGLISHNAME));
-                mushroom.setColor(results.getString(COLUMN_COLOR));
-                mushroom.setEdible(results.getInt(COLUMN_EDIBLE));
-                mushroom.setPoisonous(results.getInt(COLUMN_POISONIOUS));
-                mushrooms.add(mushroom);
-            }
-            return mushrooms;
-        }catch (SQLException e){
-            System.out.println(e.getMessage());
-            return null;
-        }
-    }
-    public List<Mushroom> getPoisonous(int orderBy,String latinName) {
+    public static Mushroom getOne(String latinName) throws SQLException {
+        Connection connection = dataSource.getConnection();
         StringBuilder sb = new StringBuilder("SELECT * FROM ");
         sb.append(DATABASE_TABLE);
         sb.append(" WHERE ");
-        sb.append(COLUMN_LATINNAME + " = " + latinName);
-        if(orderBy != ORDER_BY_NONE){
+        sb.append(COLUMN_LATINNAME + " = '" + latinName + "';" );
 
-            sb.append(" ORDER BY ");
-            sb.append(COLUMN_ENGLISHNAME);
-            sb.append(" COLLATE NOCASE ");
-            if(orderBy == ORDER_BY_DESC){
-                sb.append("DESC");
-            }else{
-                sb.append("ASC");
-            }
-        }
-        List<Mushroom> mushrooms = new ArrayList<>();
-        try(Statement statement = conn.createStatement()){
-            ResultSet results = statement.executeQuery(sb.toString());
-            while(results.next()){
+        try(PreparedStatement preparedStatement = connection.prepareStatement(sb.toString())){
+            ResultSet results = preparedStatement.executeQuery();
+            System.out.println(results);
+
                 Mushroom mushroom = new Mushroom();
                 mushroom.setId(results.getInt(COLUMN_ID));
                 mushroom.setLatinName(results.getString(COLUMN_LATINNAME));
@@ -104,26 +105,25 @@ public class Datasource {
                 mushroom.setColor(results.getString(COLUMN_COLOR));
                 mushroom.setEdible(results.getInt(COLUMN_EDIBLE));
                 mushroom.setPoisonous(results.getInt(COLUMN_POISONIOUS));
-                mushrooms.add(mushroom);
-            }
-            return mushrooms;
+
+            return mushroom;
         }catch (SQLException e){
             System.out.println(e.getMessage());
             return null;
+        }finally {
+            connection.close();
         }
     }
-    public static void insertIntoTable(String latinName,String englishName,String colors,int edible,int poisonous) throws SQLException {
-        StringBuilder sb = new StringBuilder("INSERT INTO ");
-        sb.append(DATABASE_TABLE + "(" + COLUMN_LATINNAME + ", " + COLUMN_ENGLISHNAME + ", "
-        + COLUMN_COLOR + ", " + COLUMN_EDIBLE + ", " + COLUMN_POISONIOUS + ")");
-        sb.append(" VALUES ('"+ latinName + "', '" + englishName + "', '" + colors + "', " + edible + ", " + poisonous + ")");
-
-        try(Statement statement = conn.createStatement()){
-            statement.execute(sb.toString());
-        }
-    }
-    public static Connection getConn() {
-        return conn;
-    }
+//    public static void insertIntoTable(String latinName,String englishName,String colors,int edible,int poisonous) throws SQLException {
+//        Connection connection = dataSource.getConnection();
+//        StringBuilder sb = new StringBuilder("INSERT INTO ");
+//        sb.append(DATABASE_TABLE + "(" + COLUMN_LATINNAME + ", " + COLUMN_ENGLISHNAME + ", "
+//        + COLUMN_COLOR + ", " + COLUMN_EDIBLE + ", " + COLUMN_POISONIOUS + ")");
+//        sb.append(" VALUES ('"+ latinName + "', '" + englishName + "', '" + colors + "', " + edible + ", " + poisonous + ")");
+//
+//        try(Statement statement = conn.createStatement()){
+//            statement.execute(sb.toString());
+//        }
+//    }
 }
 

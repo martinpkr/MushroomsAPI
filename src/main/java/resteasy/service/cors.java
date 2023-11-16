@@ -1,8 +1,5 @@
-package resteasy.models;
+package resteasy.service;
 
-import org.glassfish.jersey.server.spi.Container;
-
-import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
