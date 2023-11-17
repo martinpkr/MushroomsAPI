@@ -1,8 +1,7 @@
 package org.example;
 
-import com.mushrooms.models.Datasource;
-import com.mushrooms.models.Mushroom;
-import resteasy.service.AllMushrooms;
+import com.mushrooms.dao.Datasource;
+import com.mushrooms.dao.Mushroom;
 
 import java.sql.*;
 

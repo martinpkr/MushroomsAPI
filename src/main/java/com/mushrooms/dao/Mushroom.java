@@ -1,4 +1,4 @@
-package com.mushrooms.models;
+package com.mushrooms.dao;
 
 public class Mushroom {
 

@@ -1,4 +1,4 @@
-package com.mushrooms.models;
+package com.mushrooms.dao;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -7,9 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 
-public class Datasource {
+public class Datasource implements Queriable {
     public static final String DATABASE_CONNECTION = "testbase.db";
     public static final String DATABASE_TABLE = "mushrooms";
     public static final String COLUMN_ENGLISHNAME = "english_name";
@@ -47,54 +46,24 @@ public class Datasource {
         dataSource.close();
     }
 
-    public static ArrayList<Mushroom> queryMushrooms(int orderBy) throws SQLException {
+    public static ArrayList<Mushroom> queryMushrooms(int orderAs,String orderBy) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
-            System.out.println(connection);
-            StringBuilder sb = new StringBuilder("SELECT * FROM ");
-            sb.append(DATABASE_TABLE);
-            if (orderBy != ORDER_BY_NONE) {
-                sb.append(" ORDER BY ");
-                sb.append(COLUMN_ENGLISHNAME);
-                sb.append(" COLLATE NOCASE ");
-                if (orderBy == ORDER_BY_DESC) {
-                    sb.append("DESC");
-                } else {
-                    sb.append("ASC");
-                }
-            }
-            ArrayList<Mushroom> mushroomArrayList = new ArrayList<>();
-
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sb.toString())) {
-                System.out.println(preparedStatement);
+            String queryAsString = Queriable.buildQuery(DATABASE_TABLE,orderAs,orderBy);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(queryAsString)) {
                 //changed all Statements to PreparedStatements
                 ResultSet results = preparedStatement.executeQuery();
-                while (results.next()) {
-                    Mushroom mushroom = new Mushroom();
-                    mushroom.setId(results.getInt(COLUMN_ID));
-                    mushroom.setLatinName(results.getString(COLUMN_LATINNAME));
-                    mushroom.setEnglishName(results.getString(COLUMN_ENGLISHNAME));
-                    mushroom.setColor(results.getString(COLUMN_COLOR));
-                    mushroom.setEdible(results.getInt(COLUMN_EDIBLE));
-                    mushroom.setPoisonous(results.getInt(COLUMN_POISONIOUS));
-                    mushroomArrayList.add(mushroom);
-                }
-                return mushroomArrayList;
+                return Queriable.mappingQuery(results);
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
                 return null;
-            } finally {
-
             }
         }
     }
-    public static Mushroom getOne(String latinName) throws SQLException {
+    public static Mushroom getOne(String param) throws SQLException {
         Connection connection = dataSource.getConnection();
-        StringBuilder sb = new StringBuilder("SELECT * FROM ");
-        sb.append(DATABASE_TABLE);
-        sb.append(" WHERE ");
-        sb.append(COLUMN_LATINNAME + " = '" + latinName + "';" );
+        String query = Queriable.buildQueryWhere(DATABASE_TABLE,COLUMN_LATINNAME,param);
 
-        try(PreparedStatement preparedStatement = connection.prepareStatement(sb.toString())){
+        try(PreparedStatement preparedStatement = connection.prepareStatement(query)){
             ResultSet results = preparedStatement.executeQuery();
             System.out.println(results);
 
