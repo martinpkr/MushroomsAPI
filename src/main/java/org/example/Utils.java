@@ -1,9 +1,7 @@
 package org.example;
 
-import com.mushrooms.models.Datasource;
+import com.mushrooms.dao.Datasource;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 

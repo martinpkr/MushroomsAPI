@@ -1,7 +1,7 @@
 package resteasy.resource;
 
-import com.mushrooms.models.Datasource;
-import com.mushrooms.models.Mushroom;
+import com.mushrooms.dao.Datasource;
+import com.mushrooms.dao.Mushroom;
 import resteasy.service.AddMushroomImpl;
 import resteasy.service.AllMushrooms;
 import resteasy.service.PoisonousMushrooms;
@@ -28,6 +28,7 @@ public class MushroomResource {
                 .entity(allMushrooms.getAllMushrooms())
                 .build();
     }
+
     @Path("{latinName}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)

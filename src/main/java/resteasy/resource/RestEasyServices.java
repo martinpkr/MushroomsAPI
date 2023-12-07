@@ -1,6 +1,6 @@
 package resteasy.resource;
 
-import com.mushrooms.models.Datasource;
+import com.mushrooms.dao.Datasource;
 import resteasy.service.cors;
 
 import javax.ws.rs.ApplicationPath;

@@ -1,6 +1,6 @@
 package resteasy.service;
 
-import com.mushrooms.models.Datasource;
+import com.mushrooms.dao.Datasource;
 
 import java.sql.SQLException;
 
